@@ -1,0 +1,12 @@
+AWS_REGION=us-east-1
+
+# Params create SAM
+AWS_STACK_SAM_CREATE_DEPLOY=sam-bsmartech-paymentapisass-dev
+
+#Others Params
+AWS_SERVERLESS_FUNCTION_NAME=sam-list-ec2-instances-dev
+AWS_SERVERLESS_FUNCTION_NAME=ListEC2InstancesApiFunction-dev
+
+UTIL_LAYER_PARAMETER_NAME=ARN_BSMARTECH_UTIL_LAYER_DEV
+
+TABLE_NAME=tbl_plans

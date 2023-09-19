@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: An AWS Serverless Application that lists EC2 instances.
+
+Globals:
+  Function:
+    Timeout: 3
+    Environment:
+      Variables:
+        AWS_REGION_SERVER: ${AWS::Region}
+
+Resources:
+  ListEC2InstancesApiServerlessRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        - "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+
+  ListEC2InstancesGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Cors:
+        AllowHeaders: "'*,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'0'"
+        AllowCredentials: false
+      Auth:
+        DefaultAuthorizer: NONE
+        # DefaultAuthorizer: TokenAuthorizer
+        # Authorizers:
+        #   TokenAuthorizer:
+        #     FunctionPayloadType: REQUEST
+        #     FunctionArn: /bsmartech/us-east-1/dev/infrastructure/authorizer
+        #     Identity:
+        #       ReauthorizeEvery: 0
+        #       Headers:
+        #         - id_token
+
+  ListEC2Instances:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt ListEC2InstancesApiServerlessRole.Arn
+      CodeUri: .
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV2-Arm64:32 # Layer to integrate aws-power-tools in our lambdas
+        # - !Sub arn:aws:lambda:${AWS::Region}:917607595695:layer:flask-dependencies:2
+      Events:
+        OptionsInstancesApiEvent:
+          Type: Api
+          Properties:
+            Path: /instances
+            Method: OPTIONS
+            RestApiId: !Ref ListEC2InstancesGatewayApi
+            Auth:
+              Authorizer: "NONE"
+        GetInstancesApiEvent:
+          Type: Api
+          Properties:
+            Path: /instances
+            Method: get
+            RestApiId: !Ref ListEC2InstancesGatewayApi
