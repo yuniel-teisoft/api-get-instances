@@ -145,3 +145,4 @@ cython_debug/
 # AWS
 .aws/
 .aws-sam/
+.idea/

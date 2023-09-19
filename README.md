@@ -65,7 +65,7 @@ https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/insta
 
 ## Authors
 
-- Your Name
+- Yuniel Teisoft
 
 ## License
 
